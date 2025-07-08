@@ -174,13 +174,13 @@ $latest_posts = get_posts([
 
 $events = get_posts([
     'numberposts' => 6,
-    'category_name' => 'events',
+    'post_type' => 'events',
     'post_status' => 'publish'
 ]);
 
 $library_posts = get_posts([
     'numberposts' => 6,
-    'category_name' => 'library',
+    'post_type' => 'libraries',
     'post_status' => 'publish'
 ]);
 
@@ -194,9 +194,9 @@ $dummy_libraries = get_dummy_libraries();
 // =============================================================================
 
 $hero_data = [
-    'title' => get_theme_mod('hero_title', 'House of Peace'),
-    'subtitle' => get_theme_mod('hero_subtitle', 'Dialog Antar Agama, Kemanusiaan dan Persaudaraan Lintas Iman, Rumah Perdamaian, Agama untuk Perdamaian, Demokrasi'),
-    'image' => get_theme_mod('hero_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
+    'title' => get_option('icrp_hero_title', 'House of Peace'),
+    'subtitle' => get_option('icrp_hero_subtitle', 'Dialog Antar Agama, Kemanusiaan dan Persaudaraan Lintas Iman, Rumah Perdamaian, Agama untuk Perdamaian, Demokrasi'),
+    'image' => get_option('icrp_hero_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
 ];
 
 // =============================================================================
@@ -204,10 +204,10 @@ $hero_data = [
 // =============================================================================
 
 $cta_data = [
-    'title' => get_theme_mod('cta_title', 'Bergabunglah dengan Misi Perdamaian'),
-    'subtitle' => get_theme_mod('cta_subtitle', 'Mari bersama-sama membangun dialog yang bermakna dan memperkuat persaudaraan lintas iman demi Indonesia yang damai dan harmonis'),
-    'button_text' => get_theme_mod('cta_button_text', 'Bergabung Sekarang'),
-    'image' => get_theme_mod('cta_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
+    'title' => get_option('icrp_cta_title', 'Bergabunglah dengan Misi Perdamaian'),
+    'subtitle' => get_option('icrp_cta_subtitle', 'Mari bersama-sama membangun dialog yang bermakna dan memperkuat persaudaraan lintas iman demi Indonesia yang damai dan harmonis'),
+    'button_text' => get_option('icrp_cta_button_text', 'Bergabung Sekarang'),
+    'image' => get_option('icrp_cta_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
 ];
 
 // =============================================================================
@@ -275,13 +275,19 @@ if (!empty($all_articles_data)) {
 if (!empty($events)) {
     $events_data = [];
     foreach ($events as $event) {
+        // Get ACF fields
+        $event_description = get_field('event_description', $event->ID);
+        $event_image = get_field('event_featured_image', $event->ID);
+        $event_short_description = get_field('event_short_description', $event->ID);
+        
         $events_data[] = [
             'title' => $event->post_title,
-            'content' => $event->post_content,
+            'content' => $event_description ?: $event->post_content,
+            'short_description' => $event_short_description ?: wp_trim_words($event_description ?: $event->post_content, 15),
             'date' => get_post_meta($event->ID, 'event_date', true) ?: date('Y-m-d'),
             'time' => get_post_meta($event->ID, 'event_time', true) ?: '10:00',
             'location' => get_post_meta($event->ID, 'event_location', true) ?: 'Jakarta',
-            'image' => get_the_post_thumbnail_url($event->ID, 'medium') ?: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            'image' => $event_image ? $event_image['url'] : (get_the_post_thumbnail_url($event->ID, 'medium') ?: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'),
             'url' => get_permalink($event->ID)
         ];
     }
@@ -296,11 +302,18 @@ if (!empty($events)) {
 if (!empty($library_posts)) {
     $libraries_data = [];
     foreach ($library_posts as $library) {
+        // Get ACF fields
+        $book_description = get_field('book_description', $library->ID);
+        $book_cover_image = get_field('book_cover_image', $library->ID);
+        $book_summary = get_field('book_summary', $library->ID);
+        
         $libraries_data[] = [
             'title' => $library->post_title,
+            'description' => $book_description ?: $library->post_content,
+            'summary' => $book_summary ?: wp_trim_words($book_description ?: $library->post_content, 15),
             'author' => get_post_meta($library->ID, 'book_author', true) ?: 'Unknown Author',
-            'year' => get_the_date('Y', $library->ID),
-            'image' => get_the_post_thumbnail_url($library->ID, 'medium') ?: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+            'year' => get_post_meta($library->ID, 'book_year', true) ?: get_the_date('Y', $library->ID),
+            'image' => $book_cover_image ? $book_cover_image['url'] : (get_the_post_thumbnail_url($library->ID, 'medium') ?: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
             'url' => get_permalink($library->ID)
         ];
     }
@@ -525,7 +538,7 @@ if (!empty($library_posts)) {
                             <?php echo esc_html($event['title']); ?>
                         </h3>
                         <p class="text-gray-600 text-sm md:text-base">
-                            <?php echo esc_html(wp_trim_words($event['content'], 15)); ?>
+                            <?php echo esc_html($event['short_description'] ?: wp_trim_words($event['content'], 15)); ?>
                         </p>
                         <div class="flex items-center">
                             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -594,9 +607,9 @@ if (!empty($library_posts)) {
 
                                 <div class="space-y-4">
                                     <div>
-                                        <h4 class="text-lg font-semibold text-primary mb-2">Deskripsi Acara</h4>
-                                        <div class="prose prose-sm max-w-none">
-                                            <p><?php echo esc_html($event['content']); ?></p>
+                                        <h4 class="text-lg font-semibold text-primary mb-2">Deskripsi Agenda</h4>
+                                        <div class="text-sm text-gray-600 leading-relaxed break-words overflow-wrap-anywhere">
+                                            <?php echo wp_kses_post($event['content']); ?>
                                         </div>
                                     </div>
                                 </div>
