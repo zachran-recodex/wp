@@ -190,13 +190,31 @@ $dummy_events = get_dummy_events();
 $dummy_libraries = get_dummy_libraries();
 
 // =============================================================================
-// HERO SECTION DATA
+// HERO CAROUSEL DATA
 // =============================================================================
 
-$hero_data = [
-    'title' => get_option('icrp_hero_title', 'House of Peace'),
-    'subtitle' => get_option('icrp_hero_subtitle', 'Dialog Antar Agama, Kemanusiaan dan Persaudaraan Lintas Iman, Rumah Perdamaian, Agama untuk Perdamaian, Demokrasi'),
-    'image' => get_option('icrp_hero_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
+$hero_slides = [
+    [
+        'title' => get_option('icrp_hero_slide1_title', 'Dialog Antar Agama untuk Perdamaian'),
+        'description' => get_option('icrp_hero_slide1_description', 'Membangun toleransi dan perdamaian di tengah keragaman Indonesia yang kaya akan budaya dan kepercayaan'),
+        'image' => get_option('icrp_hero_slide1_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
+        'cta_text' => get_option('icrp_hero_slide1_cta_text', 'Pelajari Lebih Lanjut'),
+        'cta_url' => get_option('icrp_hero_slide1_cta_url', '#tentang')
+    ],
+    [
+        'title' => get_option('icrp_hero_slide2_title', 'Kerukunan Umat Beragama'),
+        'description' => get_option('icrp_hero_slide2_description', 'Strategi dan pendekatan dalam membangun kerukunan antar umat beragama melalui pemahaman yang mendalam'),
+        'image' => get_option('icrp_hero_slide2_image', 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
+        'cta_text' => get_option('icrp_hero_slide2_cta_text', 'Bergabung Sekarang'),
+        'cta_url' => get_option('icrp_hero_slide2_cta_url', '#agenda')
+    ],
+    [
+        'title' => get_option('icrp_hero_slide3_title', 'Rumah Perdamaian Indonesia'),
+        'description' => get_option('icrp_hero_slide3_description', 'Menjadi pusat dialog, edukasi, dan kolaborasi untuk memperkuat persaudaraan lintas iman di Indonesia'),
+        'image' => get_option('icrp_hero_slide3_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
+        'cta_text' => get_option('icrp_hero_slide3_cta_text', 'Hubungi Kami'),
+        'cta_url' => get_option('icrp_hero_slide3_cta_url', '#kontak')
+    ]
 ];
 
 // =============================================================================
@@ -325,30 +343,91 @@ if (!empty($library_posts)) {
 ?>
 
 <!-- =================================================================== -->
-<!-- HERO SECTION -->
+<!-- HERO CAROUSEL SECTION -->
 <!-- =================================================================== -->
-<section class="relative min-h-screen flex items-center justify-center">
-    <!-- Background Image -->
-    <div class="absolute inset-0">
-        <img src="<?php echo esc_url($hero_data['image']); ?>"
-             alt="<?php echo esc_attr($hero_data['title']); ?>"
-             class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/50"></div>
-    </div>
+<!-- Hero Carousel JavaScript -->
+<script>
+function heroCarousel() {
+    return {
+        slides: <?php echo json_encode($hero_slides); ?>,
+        currentSlideIndex: 1,
+        autoRotate: true,
+        init() {
+            setInterval(() => {
+                if (this.autoRotate) {
+                    this.next();
+                }
+            }, 5000);
+        },
+        previous() {
+            if (this.currentSlideIndex > 1) {
+                this.currentSlideIndex = this.currentSlideIndex - 1;
+            } else {
+                this.currentSlideIndex = this.slides.length;
+            }
+            this.autoRotate = false;
+            setTimeout(() => { this.autoRotate = true; }, 10000);
+        },
+        next() {
+            if (this.currentSlideIndex < this.slides.length) {
+                this.currentSlideIndex = this.currentSlideIndex + 1;
+            } else {
+                this.currentSlideIndex = 1;
+            }
+            this.autoRotate = false;
+            setTimeout(() => { this.autoRotate = true; }, 10000);
+        }
+    }
+}
+</script>
 
-    <!-- Content -->
-    <div class="container mx-auto px-4 relative z-20 text-center">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
-                <?php echo esc_html($hero_data['title']); ?>
-            </h1>
-            <p class="text-lg text-white/90 mb-8">
-                <?php echo esc_html($hero_data['subtitle']); ?>
-            </p>
-            <a href="#tentang" class="inline-block bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition transform hover:scale-105">
-                Selengkapnya
-            </a>
-        </div>
+<section x-data="heroCarousel()" class="relative w-full overflow-hidden">
+
+    <!-- previous button -->
+    <button type="button" class="absolute left-4 top-1/2 z-20 flex rounded-full -translate-y-1/2 items-center justify-center bg-white hover:bg-gray-50 border border-gray-200 shadow-lg p-3 text-primary transition-all duration-200 hover:shadow-xl hover:scale-105" aria-label="previous slide" x-on:click="previous()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" class="w-5 h-5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+        </svg>
+    </button>
+
+    <!-- next button -->
+    <button type="button" class="absolute right-4 top-1/2 z-20 flex rounded-full -translate-y-1/2 items-center justify-center bg-white hover:bg-gray-50 border border-gray-200 shadow-lg p-3 text-primary transition-all duration-200 hover:shadow-xl hover:scale-105" aria-label="next slide" x-on:click="next()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" class="w-5 h-5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+    </button>
+   
+    <!-- slides -->
+    <div class="relative min-h-screen w-full">
+        <template x-for="(slide, index) in slides">
+            <div x-cloak x-show="currentSlideIndex == index + 1" class="absolute inset-0" x-transition.opacity.duration.1000ms>
+                
+                <!-- Background Image -->
+                <img class="absolute w-full h-full inset-0 object-cover text-neutral-600" x-bind:src="slide.image" x-bind:alt="slide.title" />
+                
+                <!-- Image Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20"></div>
+                
+                <!-- Title and description -->
+                <div class="lg:px-32 lg:py-14 absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 px-16 py-12 text-center">
+                    <h1 class="w-full lg:w-[80%] text-balance text-3xl lg:text-6xl font-bold text-white mb-6" x-text="slide.title" x-bind:aria-describedby="'slide' + (index + 1) + 'Description'"></h1>
+                    <p class="lg:w-1/2 w-full text-pretty text-lg text-white/90 mb-8" x-text="slide.description" x-bind:id="'slide' + (index + 1) + 'Description'"></p>
+                    <a x-bind:href="slide.cta_url" class="inline-block bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition transform hover:scale-105" x-text="slide.cta_text"></a>
+                </div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- indicators -->
+    <div class="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-3 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200" role="group" aria-label="slides">
+        <template x-for="(slide, index) in slides">
+            <button 
+                class="w-3 h-3 rounded-full transition-all duration-300 hover:scale-110" 
+                x-on:click="currentSlideIndex = index + 1; autoRotate = false; setTimeout(() => { autoRotate = true; }, 10000);" 
+                :class="currentSlideIndex === index + 1 ? 'bg-primary shadow-lg' : 'bg-gray-300 hover:bg-gray-400'" 
+                :aria-label="'Go to slide ' + (index + 1)">
+            </button>
+        </template>
     </div>
 </section>
 
@@ -371,13 +450,16 @@ if (!empty($library_posts)) {
             <a href="<?php echo esc_url($featured_data['url']); ?>" class="relative w-full max-w-[1000px] h-[250px] sm:h-[350px] md:h-[400px] lg:h-[476px]">
                 <img src="<?php echo esc_url($featured_data['image']); ?>" alt="<?php echo esc_attr($featured_data['title']); ?>" class="w-full h-full object-cover rounded-lg">
                 
+                <!-- Image Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-lg"></div>
+                
                 <!-- Category Badge -->
                 <div class="absolute top-4 left-4 bg-primary z-10 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     <?php echo esc_html($featured_data['category']); ?>
                 </div>
 
                 <!-- Content Overlay -->
-                <div class="absolute inset-0 flex flex-col justify-end p-4 md:p-6 lg:p-8 rounded-lg">
+                <div class="absolute inset-0 flex flex-col justify-end p-4 md:p-6 lg:p-8 rounded-lg z-10">
                     <h2 class="text-white text-lg sm:text-xl font-bold mb-2 md:mb-3">
                         <?php echo esc_html($featured_data['title']); ?>
                     </h2>
@@ -454,7 +536,11 @@ if (!empty($library_posts)) {
                                 <div class="bg-white rounded-xl overflow-hidden shadow-lg">
                                     <div class="relative h-48 sm:h-56 md:h-64">
                                         <img :src="article.image" :alt="article.title" class="w-full h-full object-cover">
-                                        <div class="absolute top-4 left-4 bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full" x-text="article.category">
+                                        
+                                        <!-- Image Overlay -->
+                                        <div class="absolute inset-0 bg-black/20 hover:bg-black/30 transition-colors duration-300"></div>
+                                        
+                                        <div class="absolute top-4 left-4 bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full z-10" x-text="article.category">
                                         </div>
                                     </div>
                                     <div class="p-4 md:p-6">
@@ -517,13 +603,16 @@ if (!empty($library_posts)) {
                     <div class="relative">
                         <img src="<?php echo esc_url($event['image']); ?>" alt="<?php echo esc_attr($event['title']); ?>" class="w-full h-40 sm:h-44 md:h-48 object-cover">
                         
+                        <!-- Image Overlay -->
+                        <div class="absolute inset-0 bg-black/20 hover:bg-black/30 transition-colors duration-300"></div>
+                        
                         <!-- Date Badge -->
-                        <div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-xs md:text-sm">
+                        <div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-xs md:text-sm z-10">
                             <?php echo date('d M Y', strtotime($event['date'])); ?>
                         </div>
                         
                         <!-- Time Badge -->
-                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs md:text-sm">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs md:text-sm z-10">
                             <div class="flex items-center">
                                 <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -568,7 +657,11 @@ if (!empty($library_posts)) {
                         <div class="p-6 max-h-[70vh] overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <img src="<?php echo esc_url($event['image']); ?>" alt="<?php echo esc_attr($event['title']); ?>" class="w-full h-auto rounded-lg object-cover">
+                                    <div class="relative">
+                                        <img src="<?php echo esc_url($event['image']); ?>" alt="<?php echo esc_attr($event['title']); ?>" class="w-full h-auto rounded-lg object-cover">
+                                        <!-- Image Overlay -->
+                                        <div class="absolute inset-0 bg-black/10 rounded-lg"></div>
+                                    </div>
                                     
                                     <!-- Event Details -->
                                     <div class="mt-4 grid grid-cols-2 gap-3">

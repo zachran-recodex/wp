@@ -552,42 +552,77 @@ function icrp_add_admin_menus() {
 }
 add_action('admin_menu', 'icrp_add_admin_menus');
 
-// Initialize Hero Settings
+// Enqueue media uploader for admin pages
+function enqueue_media_uploader_for_admin() {
+    global $pagenow;
+    
+    // Only load on our custom admin pages
+    if (isset($_GET['page']) && in_array($_GET['page'], ['icrp-hero-settings', 'icrp-cta-settings'])) {
+        wp_enqueue_media();
+    }
+}
+add_action('admin_enqueue_scripts', 'enqueue_media_uploader_for_admin');
+
+// Initialize Hero Carousel Settings
 function icrp_hero_settings_init() {
-    register_setting('icrp_hero_settings', 'icrp_hero_title');
-    register_setting('icrp_hero_settings', 'icrp_hero_subtitle');
-    register_setting('icrp_hero_settings', 'icrp_hero_image');
+    // Register all hero carousel settings
+    for ($i = 1; $i <= 3; $i++) {
+        register_setting('icrp_hero_settings', "icrp_hero_slide{$i}_title");
+        register_setting('icrp_hero_settings', "icrp_hero_slide{$i}_description");
+        register_setting('icrp_hero_settings', "icrp_hero_slide{$i}_image");
+        register_setting('icrp_hero_settings', "icrp_hero_slide{$i}_cta_text");
+        register_setting('icrp_hero_settings', "icrp_hero_slide{$i}_cta_url");
+    }
     
-    add_settings_section(
-        'icrp_hero_section',
-        'Hero Section Configuration',
-        'icrp_hero_section_callback',
-        'icrp_hero_settings'
-    );
-    
-    add_settings_field(
-        'icrp_hero_title',
-        'Hero Title',
-        'icrp_hero_title_render',
-        'icrp_hero_settings',
-        'icrp_hero_section'
-    );
-    
-    add_settings_field(
-        'icrp_hero_subtitle',
-        'Hero Subtitle',
-        'icrp_hero_subtitle_render',
-        'icrp_hero_settings',
-        'icrp_hero_section'
-    );
-    
-    add_settings_field(
-        'icrp_hero_image',
-        'Hero Background Image',
-        'icrp_hero_image_render',
-        'icrp_hero_settings',
-        'icrp_hero_section'
-    );
+    // Add sections for each slide
+    for ($i = 1; $i <= 3; $i++) {
+        add_settings_section(
+            "icrp_hero_slide{$i}_section",
+            "Slide {$i} Configuration",
+            "icrp_hero_slide{$i}_section_callback",
+            'icrp_hero_settings'
+        );
+        
+        add_settings_field(
+            "icrp_hero_slide{$i}_title",
+            'Title',
+            "icrp_hero_slide{$i}_title_render",
+            'icrp_hero_settings',
+            "icrp_hero_slide{$i}_section"
+        );
+        
+        add_settings_field(
+            "icrp_hero_slide{$i}_description",
+            'Description',
+            "icrp_hero_slide{$i}_description_render",
+            'icrp_hero_settings',
+            "icrp_hero_slide{$i}_section"
+        );
+        
+        add_settings_field(
+            "icrp_hero_slide{$i}_image",
+            'Background Image',
+            "icrp_hero_slide{$i}_image_render",
+            'icrp_hero_settings',
+            "icrp_hero_slide{$i}_section"
+        );
+        
+        add_settings_field(
+            "icrp_hero_slide{$i}_cta_text",
+            'Button Text',
+            "icrp_hero_slide{$i}_cta_text_render",
+            'icrp_hero_settings',
+            "icrp_hero_slide{$i}_section"
+        );
+        
+        add_settings_field(
+            "icrp_hero_slide{$i}_cta_url",
+            'Button URL',
+            "icrp_hero_slide{$i}_cta_url_render",
+            'icrp_hero_settings',
+            "icrp_hero_slide{$i}_section"
+        );
+    }
 }
 add_action('admin_init', 'icrp_hero_settings_init');
 
@@ -639,39 +674,156 @@ function icrp_cta_settings_init() {
 }
 add_action('admin_init', 'icrp_cta_settings_init');
 
-// Section Callbacks
-function icrp_hero_section_callback() {
-    echo '<p>Configure the hero section that appears at the top of your homepage. This section includes the main title, subtitle, and background image.</p>';
+// Section Callbacks for Hero Slides
+function icrp_hero_slide1_section_callback() {
+    echo '<p>Configure the first slide of the hero carousel. This will be the default slide that visitors see first.</p>';
+}
+
+function icrp_hero_slide2_section_callback() {
+    echo '<p>Configure the second slide of the hero carousel.</p>';
+}
+
+function icrp_hero_slide3_section_callback() {
+    echo '<p>Configure the third slide of the hero carousel.</p>';
 }
 
 function icrp_cta_section_callback() {
     echo '<p>Configure the call-to-action section that appears at the bottom of your homepage. This section encourages visitors to take action.</p>';
 }
 
-// Hero Field Renders
-function icrp_hero_title_render() {
-    $value = get_option('icrp_hero_title', 'House of Peace');
-    echo '<input type="text" name="icrp_hero_title" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
-    echo '<p class="description">The main title displayed in the hero section.</p>';
+// Hero Carousel Field Renders
+// Slide 1 Fields
+function icrp_hero_slide1_title_render() {
+    $value = get_option('icrp_hero_slide1_title', 'Dialog Antar Agama untuk Perdamaian');
+    echo '<input type="text" name="icrp_hero_slide1_title" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
 }
 
-function icrp_hero_subtitle_render() {
-    $value = get_option('icrp_hero_subtitle', 'Dialog Antar Agama, Kemanusiaan dan Persaudaraan Lintas Iman, Rumah Perdamaian, Agama untuk Perdamaian, Demokrasi');
-    echo '<textarea name="icrp_hero_subtitle" style="width: 100%; max-width: 500px; height: 100px;">' . esc_textarea($value) . '</textarea>';
-    echo '<p class="description">The subtitle text displayed below the main title.</p>';
+function icrp_hero_slide1_description_render() {
+    $value = get_option('icrp_hero_slide1_description', 'Membangun toleransi dan perdamaian di tengah keragaman Indonesia yang kaya akan budaya dan kepercayaan');
+    echo '<textarea name="icrp_hero_slide1_description" style="width: 100%; max-width: 500px; height: 80px;">' . esc_textarea($value) . '</textarea>';
 }
 
-function icrp_hero_image_render() {
-    $value = get_option('icrp_hero_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-    echo '<input type="url" name="icrp_hero_image" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
-    echo '<p class="description">Enter the URL of the hero background image. Recommended size: 1920x1080px.</p>';
+function icrp_hero_slide1_image_render() {
+    render_hero_image_field('icrp_hero_slide1_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', 'hero_slide1');
+}
+
+function icrp_hero_slide1_cta_text_render() {
+    $value = get_option('icrp_hero_slide1_cta_text', 'Pelajari Lebih Lanjut');
+    echo '<input type="text" name="icrp_hero_slide1_cta_text" value="' . esc_attr($value) . '" style="width: 100%; max-width: 300px;" />';
+}
+
+function icrp_hero_slide1_cta_url_render() {
+    $value = get_option('icrp_hero_slide1_cta_url', '#tentang');
+    echo '<input type="text" name="icrp_hero_slide1_cta_url" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
+}
+
+// Slide 2 Fields  
+function icrp_hero_slide2_title_render() {
+    $value = get_option('icrp_hero_slide2_title', 'Kerukunan Umat Beragama');
+    echo '<input type="text" name="icrp_hero_slide2_title" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
+}
+
+function icrp_hero_slide2_description_render() {
+    $value = get_option('icrp_hero_slide2_description', 'Strategi dan pendekatan dalam membangun kerukunan antar umat beragama melalui pemahaman yang mendalam');
+    echo '<textarea name="icrp_hero_slide2_description" style="width: 100%; max-width: 500px; height: 80px;">' . esc_textarea($value) . '</textarea>';
+}
+
+function icrp_hero_slide2_image_render() {
+    render_hero_image_field('icrp_hero_slide2_image', 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', 'hero_slide2');
+}
+
+function icrp_hero_slide2_cta_text_render() {
+    $value = get_option('icrp_hero_slide2_cta_text', 'Bergabung Sekarang');
+    echo '<input type="text" name="icrp_hero_slide2_cta_text" value="' . esc_attr($value) . '" style="width: 100%; max-width: 300px;" />';
+}
+
+function icrp_hero_slide2_cta_url_render() {
+    $value = get_option('icrp_hero_slide2_cta_url', '#agenda');
+    echo '<input type="text" name="icrp_hero_slide2_cta_url" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
+}
+
+// Slide 3 Fields
+function icrp_hero_slide3_title_render() {
+    $value = get_option('icrp_hero_slide3_title', 'Rumah Perdamaian Indonesia');
+    echo '<input type="text" name="icrp_hero_slide3_title" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
+}
+
+function icrp_hero_slide3_description_render() {
+    $value = get_option('icrp_hero_slide3_description', 'Menjadi pusat dialog, edukasi, dan kolaborasi untuk memperkuat persaudaraan lintas iman di Indonesia');
+    echo '<textarea name="icrp_hero_slide3_description" style="width: 100%; max-width: 500px; height: 80px;">' . esc_textarea($value) . '</textarea>';
+}
+
+function icrp_hero_slide3_image_render() {
+    render_hero_image_field('icrp_hero_slide3_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', 'hero_slide3');
+}
+
+function icrp_hero_slide3_cta_text_render() {
+    $value = get_option('icrp_hero_slide3_cta_text', 'Hubungi Kami');
+    echo '<input type="text" name="icrp_hero_slide3_cta_text" value="' . esc_attr($value) . '" style="width: 100%; max-width: 300px;" />';
+}
+
+function icrp_hero_slide3_cta_url_render() {
+    $value = get_option('icrp_hero_slide3_cta_url', '#kontak');
+    echo '<input type="text" name="icrp_hero_slide3_cta_url" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
+}
+
+// Helper function for image uploads
+function render_hero_image_field($option_name, $default_value, $unique_id) {
+    $value = get_option($option_name, $default_value);
+    
+    echo '<div class="' . $unique_id . '-image-upload">';
+    echo '<input type="hidden" name="' . $option_name . '" id="' . $option_name . '" value="' . esc_attr($value) . '" />';
+    echo '<input type="button" class="button" id="upload_' . $unique_id . '_button" value="Choose Image" />';
+    echo '<input type="button" class="button" id="remove_' . $unique_id . '_button" value="Remove Image" style="margin-left: 10px;" />';
+    echo '<p class="description">Upload background image. Recommended size: 1920x1080px.</p>';
     
     // Preview image
+    echo '<div id="' . $unique_id . '_preview" style="margin-top: 10px;">';
     if ($value) {
-        echo '<div style="margin-top: 10px;">';
         echo '<img src="' . esc_url($value) . '" style="max-width: 300px; height: auto; border: 1px solid #ddd; border-radius: 4px;" />';
-        echo '</div>';
     }
+    echo '</div>';
+    echo '</div>';
+    
+    // Add JavaScript for media uploader
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        var <?php echo $unique_id; ?>MediaUploader;
+        
+        $('#upload_<?php echo $unique_id; ?>_button').click(function(e) {
+            e.preventDefault();
+            
+            if (<?php echo $unique_id; ?>MediaUploader) {
+                <?php echo $unique_id; ?>MediaUploader.open();
+                return;
+            }
+            
+            <?php echo $unique_id; ?>MediaUploader = wp.media({
+                title: 'Choose Background Image',
+                button: {
+                    text: 'Choose Image'
+                },
+                multiple: false
+            });
+            
+            <?php echo $unique_id; ?>MediaUploader.on('select', function() {
+                var attachment = <?php echo $unique_id; ?>MediaUploader.state().get('selection').first().toJSON();
+                $('#<?php echo $option_name; ?>').val(attachment.url);
+                $('#<?php echo $unique_id; ?>_preview').html('<img src="' + attachment.url + '" style="max-width: 300px; height: auto; border: 1px solid #ddd; border-radius: 4px;" />');
+            });
+            
+            <?php echo $unique_id; ?>MediaUploader.open();
+        });
+        
+        $('#remove_<?php echo $unique_id; ?>_button').click(function(e) {
+            e.preventDefault();
+            $('#<?php echo $option_name; ?>').val('');
+            $('#<?php echo $unique_id; ?>_preview').html('');
+        });
+    });
+    </script>
+    <?php
 }
 
 // CTA Field Renders
@@ -695,39 +847,97 @@ function icrp_cta_button_text_render() {
 
 function icrp_cta_image_render() {
     $value = get_option('icrp_cta_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-    echo '<input type="url" name="icrp_cta_image" value="' . esc_attr($value) . '" style="width: 100%; max-width: 500px;" />';
-    echo '<p class="description">Enter the URL of the CTA background image. Recommended size: 1920x1080px.</p>';
+    
+    echo '<div class="cta-image-upload">';
+    echo '<input type="hidden" name="icrp_cta_image" id="icrp_cta_image" value="' . esc_attr($value) . '" />';
+    echo '<input type="button" class="button" id="upload_cta_image_button" value="Choose Image" />';
+    echo '<input type="button" class="button" id="remove_cta_image_button" value="Remove Image" style="margin-left: 10px;" />';
+    echo '<p class="description">Upload or select CTA background image from Media Library. Recommended size: 1920x1080px.</p>';
     
     // Preview image
+    echo '<div id="cta_image_preview" style="margin-top: 10px;">';
     if ($value) {
-        echo '<div style="margin-top: 10px;">';
         echo '<img src="' . esc_url($value) . '" style="max-width: 300px; height: auto; border: 1px solid #ddd; border-radius: 4px;" />';
-        echo '</div>';
     }
+    echo '</div>';
+    echo '</div>';
+    
+    // Add JavaScript for media uploader
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        var ctaMediaUploader;
+        
+        $('#upload_cta_image_button').click(function(e) {
+            e.preventDefault();
+            
+            if (ctaMediaUploader) {
+                ctaMediaUploader.open();
+                return;
+            }
+            
+            ctaMediaUploader = wp.media({
+                title: 'Choose CTA Background Image',
+                button: {
+                    text: 'Choose Image'
+                },
+                multiple: false
+            });
+            
+            ctaMediaUploader.on('select', function() {
+                var attachment = ctaMediaUploader.state().get('selection').first().toJSON();
+                $('#icrp_cta_image').val(attachment.url);
+                $('#cta_image_preview').html('<img src="' + attachment.url + '" style="max-width: 300px; height: auto; border: 1px solid #ddd; border-radius: 4px;" />');
+            });
+            
+            ctaMediaUploader.open();
+        });
+        
+        $('#remove_cta_image_button').click(function(e) {
+            e.preventDefault();
+            $('#icrp_cta_image').val('');
+            $('#cta_image_preview').html('');
+        });
+    });
+    </script>
+    <?php
 }
 
-// Hero Settings Page
+// Hero Carousel Settings Page
 function icrp_hero_settings_page() {
     ?>
     <div class="wrap">
-        <h1>Hero Section Settings</h1>
-        <p>Configure the hero section that appears at the top of your homepage. This is the first thing visitors see when they visit your website.</p>
+        <h1>Hero Carousel Settings</h1>
+        <p>Configure the hero carousel that appears at the top of your homepage. This carousel will automatically rotate through 3 slides to showcase different aspects of your organization.</p>
         
         <form action="options.php" method="post">
             <?php
             settings_fields('icrp_hero_settings');
             do_settings_sections('icrp_hero_settings');
-            submit_button('Save Hero Settings');
+            submit_button('Save Hero Carousel Settings');
             ?>
         </form>
         
         <div style="margin-top: 30px; padding: 20px; background: #f1f1f1; border-left: 4px solid #0073aa;">
-            <h3>Tips:</h3>
+            <h3>Tips for Hero Carousel:</h3>
             <ul>
-                <li><strong>Title:</strong> Keep it short and impactful (maximum 50 characters recommended)</li>
-                <li><strong>Subtitle:</strong> Provide more details about your organization's mission</li>
-                <li><strong>Image:</strong> Use high-quality images with good contrast for text readability</li>
-                <li><strong>Image Sources:</strong> Upload to Media Library or use external URLs from Unsplash, etc.</li>
+                <li><strong>Title:</strong> Keep titles short and impactful (maximum 60 characters recommended)</li>
+                <li><strong>Description:</strong> Provide compelling descriptions that motivate action</li>
+                <li><strong>Images:</strong> Use high-quality images with good contrast for text readability</li>
+                <li><strong>CTA Buttons:</strong> Use action-oriented text like "Learn More", "Join Now", "Contact Us"</li>
+                <li><strong>URLs:</strong> Use relative URLs like "#about" or full URLs like "https://example.com"</li>
+                <li><strong>Image Sizes:</strong> Recommended size 1920x1080px for best results</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107;">
+            <h3>Carousel Features:</h3>
+            <ul>
+                <li>✅ Automatic slide rotation every 5 seconds</li>
+                <li>✅ Navigation arrows for manual control</li>
+                <li>✅ Slide indicators at the bottom</li>
+                <li>✅ Smooth fade transitions between slides</li>
+                <li>✅ Responsive design for all devices</li>
             </ul>
         </div>
     </div>
