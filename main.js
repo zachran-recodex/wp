@@ -7,6 +7,11 @@ import "./assets/css/styles.css"
 // get scripts
 import './assets/js/scripts.js'
 
+// Alpine.js
+import Alpine from 'alpinejs'
+window.Alpine = Alpine
+Alpine.start()
+
 /*
 document.querySelector('#app').innerHTML = `
   <h1>Hello Vite!</h1>

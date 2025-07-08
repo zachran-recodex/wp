@@ -69,6 +69,7 @@ export default defineConfig({
     // change freely, but update in your functions.php to match the same port
     strictPort: true,
     port: 3000,
+    host: '0.0.0.0',
 
     // serve over http
     https: false,
