@@ -193,29 +193,60 @@ $dummy_libraries = get_dummy_libraries();
 // HERO CAROUSEL DATA
 // =============================================================================
 
-$hero_slides = [
-    [
-        'title' => get_option('icrp_hero_slide1_title', 'Dialog Antar Agama untuk Perdamaian'),
-        'description' => get_option('icrp_hero_slide1_description', 'Membangun toleransi dan perdamaian di tengah keragaman Indonesia yang kaya akan budaya dan kepercayaan'),
-        'image' => get_option('icrp_hero_slide1_image', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
-        'cta_text' => get_option('icrp_hero_slide1_cta_text', 'Pelajari Lebih Lanjut'),
-        'cta_url' => get_option('icrp_hero_slide1_cta_url', '#tentang')
-    ],
-    [
-        'title' => get_option('icrp_hero_slide2_title', 'Kerukunan Umat Beragama'),
-        'description' => get_option('icrp_hero_slide2_description', 'Strategi dan pendekatan dalam membangun kerukunan antar umat beragama melalui pemahaman yang mendalam'),
-        'image' => get_option('icrp_hero_slide2_image', 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
-        'cta_text' => get_option('icrp_hero_slide2_cta_text', 'Bergabung Sekarang'),
-        'cta_url' => get_option('icrp_hero_slide2_cta_url', '#agenda')
-    ],
-    [
-        'title' => get_option('icrp_hero_slide3_title', 'Rumah Perdamaian Indonesia'),
-        'description' => get_option('icrp_hero_slide3_description', 'Menjadi pusat dialog, edukasi, dan kolaborasi untuk memperkuat persaudaraan lintas iman di Indonesia'),
-        'image' => get_option('icrp_hero_slide3_image', 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'),
-        'cta_text' => get_option('icrp_hero_slide3_cta_text', 'Hubungi Kami'),
-        'cta_url' => get_option('icrp_hero_slide3_cta_url', '#kontak')
-    ]
-];
+// Get Hero Slides from Custom Post Type
+$hero_slides_query = new WP_Query(array(
+    'post_type' => 'hero_slides',
+    'posts_per_page' => -1,
+    'post_status' => 'publish',
+    'meta_key' => 'slide_order',
+    'orderby' => 'meta_value_num',
+    'order' => 'ASC'
+));
+
+$hero_slides = [];
+if ($hero_slides_query->have_posts()) {
+    while ($hero_slides_query->have_posts()) {
+        $hero_slides_query->the_post();
+        $slide_id = get_the_ID();
+        $slide_image = get_post_meta($slide_id, 'slide_image', true);
+        
+        $hero_slides[] = [
+            'title' => get_the_title(),
+            'description' => get_post_meta($slide_id, 'slide_subtitle', true),
+            'image' => $slide_image ?: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+            'cta_text' => get_post_meta($slide_id, 'slide_cta_text', true) ?: 'Pelajari Lebih Lanjut',
+            'cta_url' => get_post_meta($slide_id, 'slide_cta_url', true) ?: '#'
+        ];
+    }
+    wp_reset_postdata();
+}
+
+// Fallback to default slides if no custom slides exist
+if (empty($hero_slides)) {
+    $hero_slides = [
+        [
+            'title' => 'Dialog Antar Agama untuk Perdamaian',
+            'description' => 'Membangun toleransi dan perdamaian di tengah keragaman Indonesia yang kaya akan budaya dan kepercayaan',
+            'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+            'cta_text' => 'Pelajari Lebih Lanjut',
+            'cta_url' => '#tentang'
+        ],
+        [
+            'title' => 'Kerukunan Umat Beragama',
+            'description' => 'Strategi dan pendekatan dalam membangun kerukunan antar umat beragama melalui pemahaman yang mendalam',
+            'image' => 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+            'cta_text' => 'Bergabung Sekarang',
+            'cta_url' => '#agenda'
+        ],
+        [
+            'title' => 'Rumah Perdamaian Indonesia',
+            'description' => 'Menjadi pusat dialog, edukasi, dan kolaborasi untuk memperkuat persaudaraan lintas iman di Indonesia',
+            'image' => 'https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+            'cta_text' => 'Hubungi Kami',
+            'cta_url' => '#kontak'
+        ]
+    ];
+}
 
 // =============================================================================
 // CTA SECTION DATA
@@ -533,14 +564,15 @@ function heroCarousel() {
                     <div x-show="currentSlideIndex == index + 1" class="absolute inset-0" x-transition.opacity.duration.500ms>
                         <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                             <template x-for="(article, articleIndex) in slide" :key="articleIndex">
-                                <div class="bg-white rounded-xl overflow-hidden shadow-lg">
+                                <div class="bg-white rounded-xl overflow-hidden shadow-lg transition hover:shadow-xl">
                                     <div class="relative h-48 sm:h-56 md:h-64">
                                         <img :src="article.image" :alt="article.title" class="w-full h-full object-cover">
                                         
                                         <!-- Image Overlay -->
                                         <div class="absolute inset-0 bg-black/20 hover:bg-black/30 transition-colors duration-300"></div>
                                         
-                                        <div class="absolute top-4 left-4 bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full z-10" x-text="article.category">
+                                        <!-- Category Badge -->
+                                        <div class="absolute top-4 left-4 bg-primary text-white text-xs md:text-sm font-semibold px-3 py-1 rounded-full z-10" x-text="article.category">
                                         </div>
                                     </div>
                                     <div class="p-4 md:p-6">
