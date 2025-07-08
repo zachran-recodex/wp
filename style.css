@@ -1,10 +1,13 @@
 /*
-Theme Name: Vite & Tailwindcss Boilerplate
-Theme URI: https://github.com/blonestar/wp-theme-vite-tailwind
-Description: Wordpress Theme rapid development with Vite & Tailwindcss
-Author: Bojan
+Theme Name: ICRP Theme - Vite & TailwindCSS
+Theme URI: https://github.com/zachran-recodex/wp
+Description: Indonesian Conference on Religion and Peace WordPress theme with modern Vite & TailwindCSS development workflow
+Author: ICRP Team
 Requires at least: 5.3
-Tested up to: 6.0.2
+Tested up to: 6.4
 Requires PHP: 7.4
-Version: 0.4
+Version: 1.0.0
+License: GPL v2 or later
+Text Domain: icrp-theme
+Tags: responsive, modern, carousel, events, library
 */
